@@ -73,9 +73,7 @@ class FirestoreService {
     DateTime? notifyTime,
     bool? notifyStatus,
   }) async {
-    final Map<String, dynamic> updates = {
-      'updated_at': Timestamp.now(),
-    };
+    final Map<String, dynamic> updates = {'updated_at': Timestamp.now()};
 
     if (notifyTime != null) {
       updates['notify_time'] = Timestamp.fromDate(notifyTime);
@@ -117,8 +115,10 @@ class FirestoreService {
   }
 
   /// 사용자의 모든 러닝 세션 조회 (최신순)
-  Future<List<RunSessionModel>> getUserRunSessions(String userId,
-      {int limit = 20}) async {
+  Future<List<RunSessionModel>> getUserRunSessions(
+    String userId, {
+    int limit = 20,
+  }) async {
     final querySnapshot = await _runSessionsCollection
         .where('user_id', isEqualTo: userId)
         .orderBy('start_time', descending: true)
@@ -131,27 +131,36 @@ class FirestoreService {
   }
 
   /// 사용자의 러닝 세션 실시간 스트림
-  Stream<List<RunSessionModel>> userRunSessionsStream(String userId,
-      {int limit = 20}) {
+  Stream<List<RunSessionModel>> userRunSessionsStream(
+    String userId, {
+    int limit = 20,
+  }) {
     return _runSessionsCollection
         .where('user_id', isEqualTo: userId)
         .orderBy('start_time', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => RunSessionModel.fromFirestore(doc))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => RunSessionModel.fromFirestore(doc))
+              .toList(),
+        );
   }
 
   /// 특정 날짜의 러닝 세션 조회
   Future<List<RunSessionModel>> getRunSessionsByDate(
-      String userId, DateTime date) async {
+    String userId,
+    DateTime date,
+  ) async {
     final startOfDay = DateTime(date.year, date.month, date.day);
     final endOfDay = startOfDay.add(const Duration(days: 1));
 
     final querySnapshot = await _runSessionsCollection
         .where('user_id', isEqualTo: userId)
-        .where('start_time', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+        .where(
+          'start_time',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
+        )
         .where('start_time', isLessThan: Timestamp.fromDate(endOfDay))
         .orderBy('start_time', descending: true)
         .get();
@@ -164,26 +173,34 @@ class FirestoreService {
   /// 사용자의 총 러닝 통계 계산
   Future<Map<String, dynamic>> getUserRunStats(String userId) async {
     final sessions = await getUserRunSessions(userId, limit: 1000);
-    final completedSessions =
-        sessions.where((s) => s.status == SessionStatus.completed).toList();
+    final completedSessions = sessions
+        .where((s) => s.status == SessionStatus.completed)
+        .toList();
 
-    final totalDistance =
-        completedSessions.fold<double>(0, (sum, s) => sum + s.distance);
-    final totalDuration =
-        completedSessions.fold<int>(0, (sum, s) => sum + s.duration);
-    final totalCoins =
-        completedSessions.fold<int>(0, (sum, s) => sum + s.coinEarned);
+    final totalDistance = completedSessions.fold<double>(
+      0,
+      (total, s) => total + s.distance,
+    );
+    final totalDuration = completedSessions.fold<int>(
+      0,
+      (total, s) => total + s.duration,
+    );
+    final totalCoins = completedSessions.fold<int>(
+      0,
+      (total, s) => total + s.coinEarned,
+    );
 
     return {
       'total_sessions': completedSessions.length,
       'total_distance': totalDistance,
       'total_duration': totalDuration,
       'total_coins': totalCoins,
-      'average_distance':
-          completedSessions.isEmpty ? 0 : totalDistance / completedSessions.length,
-      'average_duration':
-          completedSessions.isEmpty ? 0 : totalDuration / completedSessions.length,
+      'average_distance': completedSessions.isEmpty
+          ? 0
+          : totalDistance / completedSessions.length,
+      'average_duration': completedSessions.isEmpty
+          ? 0
+          : totalDuration / completedSessions.length,
     };
   }
 }
-

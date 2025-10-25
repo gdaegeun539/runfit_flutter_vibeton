@@ -7,7 +7,7 @@ import 'firestore_service.dart';
 /// 이메일/비밀번호 및 Google 소셜 로그인 지원
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   final FirestoreService _firestoreService = FirestoreService();
 
   /// 현재 로그인된 사용자
@@ -62,20 +62,19 @@ class AuthService {
   Future<UserCredential?> signInWithGoogle() async {
     try {
       // Google 로그인 프로세스 시작
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn
+          .authenticate();
 
       if (googleUser == null) {
         // 사용자가 로그인 취소
         return null;
       }
 
-      // Google 인증 정보 획득
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      // Google 인증 정보 획득 (google_sign_in 7.2.0+ 버전)
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
-      // Firebase 자격 증명 생성
+      // Firebase 자격 증명 생성 (idToken만 사용)
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 

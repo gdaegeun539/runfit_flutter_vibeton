@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-// Firebase 패키지 (flutterfire configure 완료 후 주석 해제)
-// import 'package:firebase_core/firebase_core.dart';
-// import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'firebase_options.dart';
+import 'providers/simple_auth_provider.dart';
+import 'screens/auth/welcome_screen.dart';
+import 'screens/home/home_screen.dart';
 
 void main() async {
-  // Firebase 초기화 (flutterfire configure 완료 후 주석 해제)
-  // WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase 초기화
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const RunFitApp());
 }
@@ -18,18 +20,45 @@ class RunFitApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Run-Fit',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4CAF50), // 러닝을 상징하는 그린 컬러
-          brightness: Brightness.light,
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => SimpleAuthProvider())],
+      child: MaterialApp(
+        title: 'Run-Fit',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF4CAF50), // 러닝을 상징하는 그린 컬러
+            brightness: Brightness.light,
+          ),
+          useMaterial3: true,
+          fontFamily: 'Pretendard', // 추후 폰트 추가 시 사용
         ),
-        useMaterial3: true,
-        fontFamily: 'Pretendard', // 추후 폰트 추가 시 사용
+        home: const AppWrapper(),
       ),
-      home: const SplashScreen(),
+    );
+  }
+}
+
+/// 앱 초기화 및 화면 분기 Wrapper
+class AppWrapper extends StatelessWidget {
+  const AppWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<SimpleAuthProvider>(
+      builder: (context, authProvider, child) {
+        // 로딩 중일 때 스플래시 화면 표시
+        if (authProvider.isLoading) {
+          return const SplashScreen();
+        }
+
+        // 인증 완료 시 홈 화면, 아니면 환영 화면
+        if (authProvider.isAuthenticated) {
+          return const HomeScreen();
+        } else {
+          return const WelcomeScreen();
+        }
+      },
     );
   }
 }

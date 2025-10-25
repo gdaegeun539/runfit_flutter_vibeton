@@ -63,12 +63,12 @@ lib/
 
 현재 진행 상황은 `PRD.md` 파일을 참조하세요.
 
-### Phase 1: 프로젝트 기반 공사 🚧
+### Phase 1: 프로젝트 기반 공사 ✅
 
 - [x] Flutter 프로젝트 초기화
-- [x] Firebase 패키지 설정 (Console 설정 대기 중)
-- [x] 데이터 모델 생성
-- [ ] 사용자 인증 구현
+- [x] Firebase 패키지 설정
+- [x] 데이터 모델 생성 (User, RunSession)
+- [x] 익명 인증 구현 (로그인 없이 바로 사용)
 
 ### Phase 2: 핵심 UI 및 기능 구현
 
