@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "runfit_flutter_vibeton",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "runfit_flutter_vibeton (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "runfit_flutter_vibeton (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}
