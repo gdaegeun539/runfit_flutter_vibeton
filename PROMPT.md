@@ -10,12 +10,13 @@
 2. [Task 2: Firebase 연동](#task-2-firebase-연동)
 3. [Task 3: Firestore 데이터 모델](#task-3-firestore-데이터-모델)
 4. [Task 4: 사용자 인증](#task-4-사용자-인증)
-5. [Task 5: 메인 대시보드 UI](#task-5-메인-대시보드-ui)
-6. [Task 8: 러닝 중 화면 UI](#task-8-러닝-중-화면-ui)
-7. [Task 10 & 11: 거리 계산 및 요약 화면](#task-10--11-거리-계산-및-요약-화면)
-8. [Task 12: 러닝 결과 저장 및 보상](#task-12-러닝-결과-저장-및-보상)
-9. [실시간 데이터 동기화](#실시간-데이터-동기화)
-10. [문서화](#문서화)
+5. [Task 4.5: 익명 로그인으로 전환](#task-45-익명-로그인으로-전환)
+6. [Task 5: 메인 대시보드 UI](#task-5-메인-대시보드-ui)
+7. [Task 8: 러닝 중 화면 UI](#task-8-러닝-중-화면-ui)
+8. [Task 10 & 11: 거리 계산 및 요약 화면](#task-10--11-거리-계산-및-요약-화면)
+9. [Task 12: 러닝 결과 저장 및 보상](#task-12-러닝-결과-저장-및-보상)
+10. [실시간 데이터 동기화](#실시간-데이터-동기화)
+11. [문서화](#문서화)
 
 ---
 
@@ -287,6 +288,119 @@ final credential = GoogleAuthProvider.credential(
 ```
 
 **결과**: 이메일/Google 로그인 기능 완성 ✅
+
+---
+
+## Task 4.5: 익명 로그인으로 전환
+
+### 프롬프트
+
+```
+- 로그인 관련 코드를 삭제하고 인증 없이 바로 데이터를 파이어베이스에 쌓도록 구성해줘.
+- 로그인 버튼을 누르면 바로 메인 화면으로 넘어가도록 화면을 더미로 구성해줘.
+- 해당 작업에 대해 필요한 작업을 채팅에 리스트업하고 진행해줘.
+```
+
+### 답변 요약
+
+인증 없이 익명 사용자로 Firebase 데이터를 사용하도록 변경하는 작업을 진행하겠습니다.
+📋 작업 계획
+변경 사항:
+✅ Firebase Anonymous Authentication 활성화
+✅ AuthProvider를 SimpleAuthProvider로 단순화 (익명 로그인만)
+✅ 로그인 화면을 더미 화면으로 변경 (버튼 클릭 시 바로 메인으로)
+✅ 회원가입 화면 삭제
+✅ 홈 화면에서 로그아웃 버튼 제거
+✅ 익명 사용자 ID로 Firestore 데이터 저장
+✅ 불필요한 인증 관련 코드 정리
+
+**목표**: 복잡한 로그인 UI 제거하고 자동 익명 로그인으로 전환
+
+**변경 사유**:
+
+- 해커톤 MVP는 빠른 사용자 경험이 중요
+- 이메일/비밀번호 입력 과정 생략
+- 앱 실행 즉시 사용 가능
+
+**수정된 파일**:
+
+1. **`lib/providers/auth_provider.dart` 삭제**
+
+   - 복잡한 이메일/Google 로그인 로직 제거
+
+2. **`lib/providers/simple_auth_provider.dart` 생성**:
+
+   ```dart
+   class SimpleAuthProvider with ChangeNotifier {
+     /// 초기 인증 설정 (자동 익명 로그인)
+     Future<void> _initAuth() async {
+       _firebaseUser = _auth.currentUser;
+
+       if (_firebaseUser == null) {
+         // 익명 로그인
+         final credential = await _auth.signInAnonymously();
+         _firebaseUser = credential.user;
+       }
+
+       if (_firebaseUser != null) {
+         await _loadOrCreateUserModel(_firebaseUser!.uid);
+       }
+     }
+   }
+   ```
+
+   - 자동 익명 로그인
+   - Firestore User 문서 자동 생성
+   - 이메일: `anonymous@runfit.app`
+
+3. **`lib/screens/auth/login_screen.dart` 삭제**
+4. **`lib/screens/auth/signup_screen.dart` 삭제**
+
+5. **`lib/screens/auth/welcome_screen.dart` 생성**:
+
+   - 간단한 스플래시 화면
+   - "시작하기" 버튼
+   - 자동으로 익명 로그인 진행
+
+6. **`lib/main.dart` 업데이트**:
+   - `AuthProvider` → `SimpleAuthProvider`로 변경
+   - `AuthWrapper` 간소화
+   - 로그인 화면 대신 바로 홈 화면 진입
+
+**사용자 흐름 변경**:
+
+**이전 (복잡)**:
+
+```
+앱 시작 → 로그인 화면 → 이메일 입력 → 비밀번호 입력 → 홈 화면
+```
+
+**이후 (간단)**:
+
+```
+앱 시작 → 자동 익명 로그인 → 홈 화면 ✨
+```
+
+**장점**:
+
+- ✅ 즉시 사용 가능 (마찰 제거)
+- ✅ 회원가입 과정 불필요
+- ✅ 코드 복잡도 감소
+- ✅ 해커톤 데모에 적합
+
+**단점** (향후 개선):
+
+- ⚠️ 기기 변경 시 데이터 유실
+- ⚠️ 여러 기기 동기화 불가
+- ⚠️ 사용자 식별 제한
+
+**향후 개선 방안**:
+
+- 익명 계정을 이메일 계정으로 전환 기능
+- 소셜 로그인 연동 옵션 제공
+- 설정 화면에서 계정 연동 기능
+
+**결과**: 익명 로그인으로 UX 대폭 개선 ✅
 
 ---
 
@@ -688,7 +802,7 @@ void dispose() {
 
 ## 🎓 개발 여정 요약
 
-### Phase 1: 프로젝트 기반 (Task 1-4)
+### Phase 1: 프로젝트 기반 (Task 1-4.5)
 
 - **1일차 오전**: 프로젝트 생성 및 Firebase 연동
 - **핵심 학습**: Flutter 프로젝트 구조, Firebase 설정, 패키지 관리
@@ -696,6 +810,7 @@ void dispose() {
   - `firebase_firestore` deprecated 이슈
   - Core Library Desugaring 설정
   - Google Sign-In API 변경
+- **중요 결정**: 이메일 로그인 → 익명 로그인 전환 (UX 개선)
 
 ### Phase 2: 핵심 기능 (Task 5-10)
 
@@ -725,10 +840,11 @@ void dispose() {
 ## 📊 개발 통계
 
 **총 개발 시간**: 약 8시간  
-**총 프롬프트 수**: 10개  
+**총 프롬프트 수**: 11개  
 **생성된 파일 수**: 20+ 파일  
 **코드 라인 수**: 약 3,000+ 라인  
-**해결한 이슈**: 5개 (패키지 버전, API 변경, 권한, 동기화 등)
+**해결한 이슈**: 5개 (패키지 버전, API 변경, 권한, 동기화 등)  
+**주요 결정**: 1개 (익명 로그인 전환)
 
 **주요 기술 스택**:
 
@@ -810,6 +926,6 @@ void dispose() {
 **작성일**: 2025-10-25  
 **프로젝트**: Run-Fit MVP  
 **개발 기간**: 1일  
-**총 Task 수**: 12개 (9번 스킵)  
+**총 Task 수**: 12개 (9번 스킵) + 익명 로그인 전환  
 **완료율**: 100%  
-**문서 버전**: 2.0 (전체 히스토리 포함)
+**문서 버전**: 2.1 (전체 히스토리 + 익명 로그인 포함)
