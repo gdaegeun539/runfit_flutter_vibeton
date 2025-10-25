@@ -4,7 +4,13 @@ Run-Fit 앱의 Firebase 연동을 완료하기 위한 단계별 가이드입니�
 
 ## ✅ 완료된 작업
 
-- [x] pubspec.yaml에 Firebase 패키지 추가
+- [x] pubspec.yaml에 Firebase 패키지 추가 (최신 버전으로 업데이트 완료)
+  - firebase_core: ^4.2.0
+  - firebase_auth: ^6.1.1
+  - cloud_firestore: ^6.0.3 (firebase_firestore에서 변경)
+  - firebase_messaging: ^16.0.3
+  - google_sign_in: ^7.2.0
+  - 기타 패키지 최신화
 - [x] Android build.gradle.kts 설정
 - [x] iOS Info.plist 권한 설정
 - [x] Android AndroidManifest.xml 권한 설정
@@ -15,6 +21,7 @@ Run-Fit 앱의 Firebase 연동을 완료하기 위한 단계별 가이드입니�
 - [x] Firebase 서비스 클래스 생성
   - `lib/services/auth_service.dart`
   - `lib/services/firestore_service.dart`
+- [x] 패키지 설치 완료 (`flutter pub get`)
 
 ## 📋 남은 작업
 

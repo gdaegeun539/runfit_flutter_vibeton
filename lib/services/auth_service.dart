@@ -31,10 +31,7 @@ class AuthService {
 
       // Firestore에 사용자 문서 생성
       if (credential.user != null) {
-        final userModel = UserModel(
-          userId: credential.user!.uid,
-          email: email,
-        );
+        final userModel = UserModel(userId: credential.user!.uid, email: email);
         await _firestoreService.createUser(userModel);
       }
 
@@ -106,10 +103,7 @@ class AuthService {
 
   /// 로그아웃
   Future<void> signOut() async {
-    await Future.wait([
-      _auth.signOut(),
-      _googleSignIn.signOut(),
-    ]);
+    await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
   }
 
   /// 비밀번호 재설정 이메일 전송
@@ -170,4 +164,3 @@ class AuthService {
     }
   }
 }
-
