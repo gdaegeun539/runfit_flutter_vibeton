@@ -62,13 +62,7 @@ class AuthService {
   Future<UserCredential?> signInWithGoogle() async {
     try {
       // Google 로그인 프로세스 시작
-      final GoogleSignInAccount? googleUser = await _googleSignIn
-          .authenticate();
-
-      if (googleUser == null) {
-        // 사용자가 로그인 취소
-        return null;
-      }
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 
       // Google 인증 정보 획득 (google_sign_in 7.2.0+ 버전)
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;

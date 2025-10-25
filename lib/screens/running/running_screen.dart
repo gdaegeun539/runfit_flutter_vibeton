@@ -171,6 +171,7 @@ class _RunningScreenState extends State<RunningScreen> {
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
 
+        final navigator = Navigator.of(context);
         // 뒤로가기 버튼 누를 때 확인
         final shouldPop = await showDialog<bool>(
           context: context,
@@ -190,8 +191,8 @@ class _RunningScreenState extends State<RunningScreen> {
           ),
         );
 
-        if (shouldPop == true && context.mounted) {
-          Navigator.of(context).pop();
+        if (shouldPop == true && mounted) {
+          navigator.pop();
         }
       },
       child: Scaffold(
@@ -207,6 +208,7 @@ class _RunningScreenState extends State<RunningScreen> {
           leading: IconButton(
             icon: const Icon(Icons.close),
             onPressed: () async {
+              final navigator = Navigator.of(context);
               final shouldPop = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -228,7 +230,7 @@ class _RunningScreenState extends State<RunningScreen> {
                 ),
               );
               if (shouldPop == true && mounted) {
-                Navigator.of(context).pop();
+                navigator.pop();
               }
             },
           ),

@@ -86,18 +86,18 @@ class WelcomeScreen extends StatelessWidget {
                                   color: Color(0xFF4CAF50),
                                 ),
                               )
-                            : Row(
+                            : const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Text(
+                                  Text(
                                     '시작하기',
                                     style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.arrow_forward),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward),
                                 ],
                               ),
                       );
