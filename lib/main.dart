@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'providers/simple_auth_provider.dart';
+import 'providers/running_provider.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'screens/home/home_screen.dart';
 
@@ -21,7 +22,10 @@ class RunFitApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => SimpleAuthProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => SimpleAuthProvider()),
+        ChangeNotifierProvider(create: (_) => RunningProvider()),
+      ],
       child: MaterialApp(
         title: 'Run-Fit',
         debugShowCheckedModeBanner: false,
