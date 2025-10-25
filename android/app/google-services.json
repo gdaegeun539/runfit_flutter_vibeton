@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "36777980180",
+    "project_id": "run-fit-dfb94",
+    "storage_bucket": "run-fit-dfb94.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:36777980180:android:9a84a8909b39bd1a545201",
+        "android_client_info": {
+          "package_name": "com.example.runfit_flutter_vibeton"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWIwix9-s2gH9xC1PkdvyZMKXuGkRygoo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
