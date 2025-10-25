@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/running_provider.dart';
 import '../../widgets/running/running_stat_display.dart';
 import '../../widgets/running/running_control_buttons.dart';
+import 'running_summary_screen.dart';
 
 /// 러닝 중 화면 (Task 8)
 /// F-02: 인터벌 음성 코칭 화면
@@ -98,16 +99,15 @@ class _RunningScreenState extends State<RunningScreen> {
     final provider = context.read<RunningProvider>();
     provider.finishRunning();
 
-    // TODO: Task 11에서 러닝 요약 화면으로 이동
-    // 지금은 임시로 홈으로 돌아감
-    Navigator.of(context).pop();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '러닝 완료! ${provider.formattedTime}, ${provider.formattedDistance}',
+    // 러닝 요약 화면으로 이동 (Task 11)
+    // 기본 코인: 100 코인 (Task 12에서 실제 계산 로직 구현 예정)
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => RunningSummaryScreen(
+          elapsedSeconds: provider.elapsedSeconds,
+          distanceKm: provider.distanceKm,
+          earnedCoins: 100, // 기본 보상
         ),
-        duration: const Duration(seconds: 3),
       ),
     );
   }

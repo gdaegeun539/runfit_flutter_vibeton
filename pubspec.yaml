@@ -66,6 +66,9 @@ dependencies:
   # 날짜/시간 처리
   intl: ^0.19.0
 
+  # 축하 효과 (Confetti)
+  confetti: ^0.8.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
