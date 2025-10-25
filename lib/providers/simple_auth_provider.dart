@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
@@ -12,6 +13,7 @@ class SimpleAuthProvider with ChangeNotifier {
   User? _firebaseUser;
   UserModel? _userModel;
   bool _isLoading = true;
+  StreamSubscription<UserModel?>? _userModelSubscription;
 
   // Getters
   User? get firebaseUser => _firebaseUser;
@@ -65,10 +67,37 @@ class SimpleAuthProvider with ChangeNotifier {
         await _firestoreService.createUser(_userModel!);
       }
 
+      // 실시간 스트림 구독 시작
+      _subscribeToUserModelStream(userId);
+
       notifyListeners();
     } catch (e) {
       debugPrint('사용자 모델 로드/생성 실패: $e');
     }
+  }
+
+  /// 사용자 모델 실시간 스트림 구독
+  void _subscribeToUserModelStream(String userId) {
+    // 기존 구독 취소
+    _userModelSubscription?.cancel();
+
+    // 새 스트림 구독
+    _userModelSubscription = _firestoreService
+        .userStream(userId)
+        .listen(
+          (userModel) {
+            if (userModel != null) {
+              _userModel = userModel;
+              notifyListeners();
+              debugPrint(
+                '사용자 모델 업데이트: 코인=${userModel.totalCoin}, 스트릭=${userModel.currentStreak}',
+              );
+            }
+          },
+          onError: (error) {
+            debugPrint('사용자 모델 스트림 에러: $error');
+          },
+        );
   }
 
   /// 사용자 정보 새로고침
@@ -84,5 +113,10 @@ class SimpleAuthProvider with ChangeNotifier {
       await _initAuth();
     }
   }
-}
 
+  @override
+  void dispose() {
+    _userModelSubscription?.cancel();
+    super.dispose();
+  }
+}
