@@ -7,6 +7,7 @@ class UserModel {
   final String email;
   final int totalCoin; // 누적된 건강 코인 잔액 (F-04)
   final int currentStreak; // 현재 연속 러닝 횟수 (F-05)
+  final DateTime? lastRunDate; // 마지막 러닝 날짜 (스트릭 계산용)
   final DateTime? notifyTime; // 푸시 알림 희망 시간 (F-06)
   final bool notifyStatus; // 푸시 알림 수신 여부 (F-06)
   final DateTime createdAt; // 계정 생성 시간
@@ -17,6 +18,7 @@ class UserModel {
     required this.email,
     this.totalCoin = 0,
     this.currentStreak = 0,
+    this.lastRunDate,
     this.notifyTime,
     this.notifyStatus = true,
     DateTime? createdAt,
@@ -32,6 +34,9 @@ class UserModel {
       email: data['email'] as String,
       totalCoin: data['total_coin'] as int? ?? 0,
       currentStreak: data['current_streak'] as int? ?? 0,
+      lastRunDate: data['last_run_date'] != null
+          ? (data['last_run_date'] as Timestamp).toDate()
+          : null,
       notifyTime: data['notify_time'] != null
           ? (data['notify_time'] as Timestamp).toDate()
           : null,
@@ -47,6 +52,8 @@ class UserModel {
       'email': email,
       'total_coin': totalCoin,
       'current_streak': currentStreak,
+      'last_run_date':
+          lastRunDate != null ? Timestamp.fromDate(lastRunDate!) : null,
       'notify_time': notifyTime != null ? Timestamp.fromDate(notifyTime!) : null,
       'notify_status': notifyStatus,
       'created_at': Timestamp.fromDate(createdAt),
@@ -96,6 +103,7 @@ class UserModel {
     String? email,
     int? totalCoin,
     int? currentStreak,
+    DateTime? lastRunDate,
     DateTime? notifyTime,
     bool? notifyStatus,
     DateTime? createdAt,
@@ -106,6 +114,7 @@ class UserModel {
       email: email ?? this.email,
       totalCoin: totalCoin ?? this.totalCoin,
       currentStreak: currentStreak ?? this.currentStreak,
+      lastRunDate: lastRunDate ?? this.lastRunDate,
       notifyTime: notifyTime ?? this.notifyTime,
       notifyStatus: notifyStatus ?? this.notifyStatus,
       createdAt: createdAt ?? this.createdAt,

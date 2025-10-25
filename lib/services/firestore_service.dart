@@ -85,6 +85,85 @@ class FirestoreService {
     await _usersCollection.doc(userId).update(updates);
   }
 
+  /// 러닝 세션 저장 및 보상 지급 (Task 12)
+  /// Run_Session 저장 + User의 코인/스트릭 업데이트를 트랜잭션으로 처리
+  Future<String> saveRunningSessionWithReward({
+    required String userId,
+    required DateTime startTime,
+    required int durationSeconds,
+    required double distanceKm,
+    int coinReward = 100, // 기본 보상: 100 코인
+  }) async {
+    String sessionId = '';
+
+    await _firestore.runTransaction((transaction) async {
+      // 1. 사용자 정보 조회
+      final userRef = _usersCollection.doc(userId);
+      final userDoc = await transaction.get(userRef);
+
+      if (!userDoc.exists) {
+        throw Exception('User not found');
+      }
+
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final currentCoins = userData['total_coin'] as int? ?? 0;
+      final currentStreak = userData['current_streak'] as int? ?? 0;
+      final lastRunDate = userData['last_run_date'] != null
+          ? (userData['last_run_date'] as Timestamp).toDate()
+          : null;
+
+      // 2. 스트릭 계산
+      final today = DateTime.now();
+      final todayDate = DateTime(today.year, today.month, today.day);
+      int newStreak = currentStreak;
+
+      if (lastRunDate == null) {
+        // 첫 러닝
+        newStreak = 1;
+      } else {
+        final lastDate =
+            DateTime(lastRunDate.year, lastRunDate.month, lastRunDate.day);
+        final daysDifference = todayDate.difference(lastDate).inDays;
+
+        if (daysDifference == 0) {
+          // 오늘 이미 러닝함 (스트릭 유지)
+          newStreak = currentStreak;
+        } else if (daysDifference == 1) {
+          // 어제 러닝함 (스트릭 증가)
+          newStreak = currentStreak + 1;
+        } else {
+          // 하루 이상 건너뜀 (스트릭 리셋)
+          newStreak = 1;
+        }
+      }
+
+      // 3. Run_Session 생성
+      final sessionRef = _runSessionsCollection.doc();
+      sessionId = sessionRef.id;
+
+      final session = RunSessionModel(
+        sessionId: sessionId,
+        userId: userId,
+        startTime: startTime,
+        duration: durationSeconds,
+        distance: distanceKm,
+        coinEarned: coinReward,
+      );
+
+      transaction.set(sessionRef, session.toFirestore());
+
+      // 4. User 업데이트 (코인, 스트릭, 마지막 러닝 날짜)
+      transaction.update(userRef, {
+        'total_coin': currentCoins + coinReward,
+        'current_streak': newStreak,
+        'last_run_date': Timestamp.fromDate(today),
+        'updated_at': Timestamp.now(),
+      });
+    });
+
+    return sessionId;
+  }
+
   // ==================== Run_Session 관련 메서드 ====================
 
   /// 새 러닝 세션 생성

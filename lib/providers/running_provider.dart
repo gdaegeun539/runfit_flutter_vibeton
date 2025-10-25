@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import '../services/firestore_service.dart';
 
 /// 러닝 세션 상태
 enum RunningState {
@@ -13,6 +14,8 @@ enum RunningState {
 /// 러닝 세션 상태 관리 Provider
 /// 타이머, GPS 거리 추적, 속도 계산 등을 담당
 class RunningProvider extends ChangeNotifier {
+  final FirestoreService _firestoreService = FirestoreService();
+
   // 상태
   RunningState _state = RunningState.idle;
   RunningState get state => _state;
@@ -229,6 +232,27 @@ class RunningProvider extends ChangeNotifier {
   /// 포맷된 속도 문자열
   String get formattedSpeed {
     return '${_currentSpeed.toStringAsFixed(1)} km/h';
+  }
+
+  /// 러닝 세션 저장 및 보상 지급 (Task 12)
+  Future<String> saveRunningSession(String userId) async {
+    if (_startTime == null) {
+      throw Exception('Running session not started');
+    }
+
+    try {
+      final sessionId = await _firestoreService.saveRunningSessionWithReward(
+        userId: userId,
+        startTime: _startTime!,
+        durationSeconds: _elapsedSeconds,
+        distanceKm: distanceKm,
+        coinReward: 100, // 기본 보상
+      );
+
+      return sessionId;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/running_provider.dart';
+import '../../providers/simple_auth_provider.dart';
 import '../../widgets/running/running_stat_display.dart';
 import '../../widgets/running/running_control_buttons.dart';
 import 'running_summary_screen.dart';
@@ -95,21 +96,72 @@ class _RunningScreenState extends State<RunningScreen> {
     _finishRunning();
   }
 
-  void _finishRunning() {
-    final provider = context.read<RunningProvider>();
-    provider.finishRunning();
+  Future<void> _finishRunning() async {
+    final runningProvider = context.read<RunningProvider>();
+    final authProvider = context.read<SimpleAuthProvider>();
 
-    // 러닝 요약 화면으로 이동 (Task 11)
-    // 기본 코인: 100 코인 (Task 12에서 실제 계산 로직 구현 예정)
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => RunningSummaryScreen(
-          elapsedSeconds: provider.elapsedSeconds,
-          distanceKm: provider.distanceKm,
-          earnedCoins: 100, // 기본 보상
-        ),
+    runningProvider.finishRunning();
+
+    // 사용자 ID 확인
+    final userId = authProvider.userId;
+    if (userId == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('사용자 정보를 찾을 수 없습니다')),
+      );
+      Navigator.of(context).pop();
+      return;
+    }
+
+    // 로딩 표시
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
       ),
     );
+
+    try {
+      // Firestore에 러닝 세션 저장 및 보상 지급 (Task 12)
+      await runningProvider.saveRunningSession(userId);
+
+      if (!mounted) return;
+      // 로딩 다이얼로그 닫기
+      Navigator.of(context).pop();
+
+      // 러닝 요약 화면으로 이동
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => RunningSummaryScreen(
+            elapsedSeconds: runningProvider.elapsedSeconds,
+            distanceKm: runningProvider.distanceKm,
+            earnedCoins: 100, // 기본 보상
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // 로딩 다이얼로그 닫기
+      Navigator.of(context).pop();
+
+      // 에러 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('저장 실패: $e')),
+      );
+
+      // 에러 발생 시에도 요약 화면으로 이동 (데이터는 저장 안됨)
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => RunningSummaryScreen(
+            elapsedSeconds: runningProvider.elapsedSeconds,
+            distanceKm: runningProvider.distanceKm,
+            earnedCoins: 0, // 저장 실패 시 코인 없음
+          ),
+        ),
+      );
+    }
   }
 
   @override
